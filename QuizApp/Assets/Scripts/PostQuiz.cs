@@ -8,9 +8,12 @@ public class PostQuiz : MonoBehaviour
 {
   [SerializeField]
   Text _totalScoreText;
+  [SerializeField]
+  Text _levelText;
   public void Start()
   {
-    _totalScoreText.text = "Dummy";
+    _totalScoreText.text = GameApp.Instance.user.score.ToString();
+    _levelText.text = "Level " + GameApp.Instance.user.level.ToString();
   }
   public void OnClickPlay()
   {

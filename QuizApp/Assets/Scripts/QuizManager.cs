@@ -47,6 +47,9 @@ public class QuizManager : MonoBehaviour
   int _currentIndex = 0;
   IEnumerator _countdownCoroutine = null;
   int _totalScore = 0;
+  float _startTime = 0.0f;
+
+  List<Response> _resposnes = new List<Response>();
 
   // Quiz related variables.
   // Start is called before the first frame update
@@ -73,6 +76,8 @@ public class QuizManager : MonoBehaviour
       //will open once we finish our quiz.
       return;
     }
+
+    _startTime = Time.time;
 
     _progressText.text = (_currentIndex + 1).ToString() + "/" + _questions.Count;
 
@@ -121,6 +126,7 @@ public class QuizManager : MonoBehaviour
       StopCoroutine(_countdownCoroutine);
     _countdownCoroutine = null;
 
+    Response r = new Response();
     Question q = _questions[_currentIndex];
     int score = 0;
     if(q.correctAnswerId == id)
@@ -128,13 +134,21 @@ public class QuizManager : MonoBehaviour
       // User selected the correct answer. Shw=ow the correct answer panel.
       score = 100;
       ShowCorrectAnswerPanel(score);
+      r.type = ResponseType.CORRECT;
     }
     else
     {
       ShowInCorrectAnswerPanel();
+      r.type = ResponseType.INCORRECT;
     }
     _totalScore += score;
     _totalScoreText.text = _totalScore.ToString();
+
+    r.score = 100;
+
+    float endTime = Time.time;
+    r.time = endTime - _startTime;
+    _resposnes.Add(r);
   }
   void ShowCorrectAnswerPanel(int score)
   {
@@ -186,6 +200,13 @@ public class QuizManager : MonoBehaviour
     _currentIndex++;
     if(_currentIndex == _questions.Count)
     {
+      GameApp.Instance.user.score += _totalScore;
+      GameApp.Instance.user.level += 1;
+      // Lets save the userdata.
+      GameApp.Instance.SaveUserData();
+      // Lets save the user responses.
+      GameApp.Instance.SaveResponses(_resposnes);
+
       // Go to the next scene.
       SceneManager.LoadScene("PostQuiz");
       return;
